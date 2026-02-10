@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📧 Email Campaign Manager (Redis + BullMQ)
 
-## Getting Started
+A high-performance, modular email queueing system built with **Next.js**, **BullMQ**, and **Redis**. This project demonstrates professional architectural patterns for handling long-running background tasks in a modern web application.
 
-First, run the development server:
+---
+
+## 🌟 Features
+
+- **Real-time Dashboard**: Monitor job status (active, waiting, completed, failed) in real-time.
+- **Modular Service Architecture**: Encapsulated queue logic in a dedicated `QueueService`.
+- **Parallel Processing**: High-throughput worker capable of processing multiple jobs concurrently.
+- **Resilient Design**: Exponential backoff and retry logic for failed jobs.
+- **Premium UI**: Clean, responsive dashboard built with Tailwind CSS and Lucide icons.
+
+## 🏗️ Project Structure
+
+```text
+├── app/                  # Next.js App Router (UI & API Routes)
+├── components/           # Reusable UI Dashboard components
+├── services/             # Business Logic (Queue management)
+├── workers/              # Background Worker & Job Processors
+├── lib/                  # Shared Connection Utilities (Redis/Queue)
+├── types/                # Centralized TypeScript Interfaces
+└── constants/            # Global Configuration & Magic Strings
+```
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+
+- **Node.js**: v18.x or later.
+- **Redis Server**: You can use a local Redis instance or a managed service like [Upstash](https://upstash.com/) (recommended for easy setup).
+
+### 2. Environment Setup
+
+Create a `.env` file in the root directory and add your Redis URL:
+
+```env
+REDIS_URL=your_redis_connection_string
+```
+
+### 3. Installation
+
+```bash
+npm install
+```
+
+### 4. Running the Project
+
+To run the full system, you need to start two processes in separate terminals:
+
+#### Terminal 1: Background Worker
+
+This process listens to the queue and "sends" the emails.
+
+```bash
+npm run worker
+```
+
+#### Terminal 2: Web Dashboard
+
+This runs the Next.js frontend and the API routes for controlling the queue.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit **[http://localhost:3000](http://localhost:3000)** to view your dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tech Stack
 
-## Learn More
+- **Framework**: Next.js 15 (App Router)
+- **Queue Engine**: BullMQ
+- **Data Store**: Redis (via ioredis)
+- **Styling**: Tailwind CSS
+- **Types**: TypeScript
+- **Icons**: Lucide React
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+_This project was built for learning purposes to explore message queue architectures and distributed systems._

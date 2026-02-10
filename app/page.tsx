@@ -1,65 +1,124 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import useSWR from 'swr'
+import { StatCard } from '@/components/dashboard/StatCard'
+import { CampaignForm } from '@/components/dashboard/CampaignForm'
+import { QueueControls } from '@/components/dashboard/QueueControls'
+import { JobFeed } from '@/components/dashboard/JobFeed'
+import { QueueAction, QueueStatus } from '@/types/queue'
+import { addCampaignAction, performQueueAction } from './actions'
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
+export default function QueueDashboard() {
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Use SWR for polling status. This replaces useEffect + setInterval.
+  const { data: status, mutate } = useSWR<QueueStatus>('/api/status', fetcher, {
+    refreshInterval: 3000,
+    fallbackData: {
+      active: 0,
+      waiting: 0,
+      completed: 0,
+      failed: 0,
+      jobs: [],
+    },
+  })
+
+  // Safe access to status data
+  const currentStatus = status!
+
+  const handleAddCampaign = async (count: number) => {
+    setIsLoading(true)
+    try {
+      const emails = Array.from(
+        { length: count },
+        (_, i) => `user${Math.floor(Math.random() * 100000)}@example.com`,
+      )
+
+      const result = await addCampaignAction(emails)
+      if (result.success) {
+        // Trigger an immediate re-fetch to show new jobs
+        mutate()
+      } else {
+        console.error(result.error)
+      }
+    } catch (error) {
+      console.error('Failed to add campaign:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleQueueAction = async (action: QueueAction) => {
+    try {
+      const result = await performQueueAction(action)
+      if (result.success) {
+        // Trigger an immediate re-fetch to reflect status change
+        mutate()
+      } else {
+        console.error(result.error)
+      }
+    } catch (error) {
+      console.error(`Failed to perform action ${action}:`, error)
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-900 text-white p-8 font-sans">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-purple-600">
+              Email Campaign Manager
+            </h1>
+            <p className="text-gray-400 mt-1">Redis + BullMQ Queue Dashboard</p>
+          </div>
+          <div className="bg-gray-800 p-3 rounded-lg flex items-center gap-3 border border-gray-700">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-sm font-medium">Worker Status: Active</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Controls */}
+          <div className="lg:col-span-1 space-y-6">
+            <CampaignForm onAdd={handleAddCampaign} isLoading={isLoading} />
+            <QueueControls onAction={handleQueueAction} />
+          </div>
+
+          {/* Right Column: Stats & Monitoring */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                label="Active"
+                value={currentStatus.active}
+                color="blue"
+              />
+              <StatCard
+                label="Waiting"
+                value={currentStatus.waiting}
+                color="yellow"
+              />
+              <StatCard
+                label="Completed"
+                value={currentStatus.completed}
+                color="green"
+              />
+              <StatCard
+                label="Failed"
+                value={currentStatus.failed}
+                color="red"
+              />
+            </div>
+
+            <JobFeed jobs={currentStatus.jobs} />
+          </div>
         </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }
