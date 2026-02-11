@@ -13,11 +13,11 @@ export class QueueService {
   }
 
   static async getQueueStatus(): Promise<QueueStatus> {
-    const states: JobStatus[] = ['active', 'waiting', 'completed', 'failed']
+    const states: JobStatus[] = ['active', 'waiting', 'completed', 'failed', 'paused']
 
     const [jobs, counts] = await Promise.all([
       emailQueue.getJobs(states),
-      emailQueue.getJobCounts('active', 'waiting', 'completed', 'failed'),
+      emailQueue.getJobCounts('active', 'waiting', 'completed', 'failed', 'paused'),
     ])
 
     console.log('Queue Counts:', counts)
@@ -37,7 +37,7 @@ export class QueueService {
 
     return {
       active: counts.active || 0,
-      waiting: counts.waiting || 0,
+      waiting: (counts.waiting || 0) + (counts.paused || 0),
       completed: counts.completed || 0,
       failed: counts.failed || 0,
       jobs: jobData as Job[],

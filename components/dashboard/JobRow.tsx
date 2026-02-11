@@ -15,12 +15,20 @@ export function JobRow({ job }: JobRowProps) {
   }
 
   return (
-    <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-700/50 flex items-center justify-between group hover:border-gray-600 transition-colors">
-      <div className="flex flex-col gap-1">
-        <span className="font-medium text-gray-300 text-sm">
-          {job.data.email || `Job #${job.id}`}
-        </span>
-        <span className="text-xs text-gray-500 font-mono">ID: {job.id}</span>
+    <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50 flex items-center justify-between group hover:border-gray-600 transition-all hover:bg-gray-800/50">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-400 text-sm font-medium">
+          {(job.data.email || `Job #${job.id}`).charAt(0).toUpperCase()}
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="font-medium text-gray-200 text-sm truncate max-w-[200px]">
+            {job.data.email || `Job #${job.id}`}
+          </span>
+          <span className="text-xs text-gray-500 font-mono flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+            ID: {job.id}
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-4">
