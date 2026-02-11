@@ -1,3 +1,11 @@
+<img width="1883" height="945" alt="image" src="https://github.com/user-attachments/assets/74f06620-7314-4ba0-87a4-c06ca3d7fed0" />
+
+
+
+
+
+
+
 # 📧 Email Campaign Manager (Redis + BullMQ)
 
 A high-performance, modular email queueing system built with **Next.js**, **BullMQ**, and **Redis**. This project demonstrates professional architectural patterns for handling long-running background tasks in a modern web application.
